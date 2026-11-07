@@ -1491,7 +1491,7 @@ struct itype {
         bool has_any_quality( std::string_view quality ) const;
 
         // Properties are assigned to the type (belong to the item definition)
-        std::map<std::string, std::string> properties;
+        std::map<std::string, std::string, std::less<>> properties;
 
         // Item vars are loaded from the type, but assigned and de/serialized with the item itself
         global_variables::impl_t item_variables;

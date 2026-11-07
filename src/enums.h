@@ -16,7 +16,7 @@ enum class aim_exit : int {
     none = 0,
     okay,
     re_entry,
-    last
+    last,
 };
 
 template<>
@@ -30,7 +30,7 @@ enum class aim_entry : int {
     VEHICLE   = 1,
     MAP       = 2,
     RESET     = 3,
-    last
+    last,
 };
 
 template<>
@@ -79,7 +79,7 @@ enum class veh_spawn_status : int {
     UNDAMAGED = 0, // Undamaged
     DISABLED = 1, // disabled: destroyed seats, controls, tanks, tires, OR engine
     PRISTINE = 2, // undamaged with no faults or security
-    LAST = 3
+    LAST = 3,
 };
 
 // default is sorting by distance
@@ -88,7 +88,7 @@ enum class surroundings_menu_sort_flags : int {
     NAME          = 1 << 0,
     CATEGORY      = 1 << 1,
     CATEGORY_NAME = NAME | CATEGORY, // this is currently needed to cycle through the option
-    count
+    count,
 };
 
 template<>
@@ -102,7 +102,7 @@ struct enum_traits<surroundings_menu_sort_flags> {
 enum class trinary : int {
     NONE = 0,
     SOME = 1,
-    ALL  = 2
+    ALL  = 2,
 };
 
 enum class holiday : int {
@@ -113,7 +113,7 @@ enum class holiday : int {
     halloween,
     thanksgiving,
     christmas,
-    num_holiday
+    num_holiday,
 };
 
 template<>
@@ -126,14 +126,14 @@ enum class temperature_flag : int {
     HEATER,
     FRIDGE,
     FREEZER,
-    ROOT_CELLAR
+    ROOT_CELLAR,
 };
 
 //Used for autopickup and safemode rules
 enum class rule_state : int {
     NONE,
     WHITELISTED,
-    BLACKLISTED
+    BLACKLISTED,
 };
 
 enum class visibility_type : int {
@@ -142,7 +142,7 @@ enum class visibility_type : int {
     LIT,
     BOOMER,
     DARK,
-    BOOMER_DARK
+    BOOMER_DARK,
 };
 
 // Matching rules for comparing a string to an overmap terrain id.
@@ -166,7 +166,7 @@ enum class ot_match_type : int {
     // occur at the beginning, end, or middle and does not have any rules about
     // underscore delimiting.
     contains,
-    num_ot_match_type
+    num_ot_match_type,
 };
 
 template<>
@@ -183,13 +183,13 @@ enum accessor_flags_ {
     Access_Map_Current_Z              = 1 << 2,      // Everything on the current z-level (ignores reachability)
     Access_Map_All                    = 1 << 3,      // Everything on the map, all z-levels (ignores reachability)
     Access_Vehicle                    = 1 << 4,      // Everything on vehicles in the bubble *owned by that guy's faction* (ignores reachability)
-    Access_EVERYTHING                 = Access_Inventory | Access_Map_All | Access_Vehicle      // All of the above
+    Access_EVERYTHING                 = Access_Inventory | Access_Map_All | Access_Vehicle,     // All of the above
 };
 
 enum class special_game_type : int {
     NONE = 0,
     TUTORIAL,
-    NUM_SPECIAL_GAME_TYPES
+    NUM_SPECIAL_GAME_TYPES,
 };
 
 enum art_effect_passive : int {
@@ -237,7 +237,7 @@ enum art_effect_passive : int {
     AEP_SICK, // Decreases health over time
     AEP_CLAIRVOYANCE_PLUS, // See through walls to a larger distance; not bad effect, placement to preserve old saves.
 
-    NUM_AEPS
+    NUM_AEPS,
 };
 
 template<>
@@ -264,7 +264,7 @@ enum artifact_natural_property {
     ARTPROP_RATTLING, //
     ARTPROP_SCALED,
     ARTPROP_FRACTAL,
-    ARTPROP_MAX
+    ARTPROP_MAX,
 };
 
 enum class phase_id : int {
@@ -273,7 +273,7 @@ enum class phase_id : int {
     LIQUID,
     GAS,
     PLASMA,
-    num_phases
+    num_phases,
 };
 
 template<>
@@ -304,14 +304,14 @@ enum class liquid_source_type : int {
     INFINITE_MAP = 1,
     MAP_ITEM = 2,
     VEHICLE = 3,
-    MONSTER = 4
+    MONSTER = 4,
 };
 
 enum class liquid_target_type : int {
     CONTAINER = 1,
     VEHICLE = 2,
     MAP = 3,
-    MONSTER = 4
+    MONSTER = 4,
 };
 
 /**
@@ -339,7 +339,7 @@ enum class layer_level : int {
     /* "Aura" layer, corresponds to AURA flag */
     AURA,
     /* Not a valid layer; used for C-style iteration through this enum */
-    NUM_LAYER_LEVELS
+    NUM_LAYER_LEVELS,
 };
 
 template<>
@@ -399,7 +399,7 @@ enum game_message_type : int {
     m_headshot,
     m_critical,
     m_grazing,
-    num_game_message_type
+    num_game_message_type,
 };
 
 template<>
@@ -454,11 +454,11 @@ enum MULTITILE_TYPE {
     unconnected,
     open_,
     broken,
-    num_multitile_types
+    num_multitile_types,
 };
 
 enum class reachability_cache_quadrant : int {
-    NE, SE, NW, SW
+    NE, SE, NW, SW,
 };
 
 template<>
@@ -466,7 +466,7 @@ struct enum_traits<reachability_cache_quadrant> {
     static constexpr reachability_cache_quadrant last = reachability_cache_quadrant::SW;
     static constexpr int size = static_cast<int>( last ) + 1;
 
-    inline static reachability_cache_quadrant quadrant( bool S, bool W ) {
+    inline static reachability_cache_quadrant quadrant(const bool S, const bool W ) {
         return static_cast<reachability_cache_quadrant>(
                    ( static_cast<int>( W ) << 1 ) | static_cast<int>( S )
                );
@@ -480,12 +480,12 @@ enum class monotonically : int {
     unknown,
 };
 
-constexpr bool is_increasing( monotonically m )
+constexpr bool is_increasing(const monotonically m )
 {
     return m == monotonically::constant || m == monotonically::increasing;
 }
 
-constexpr bool is_decreasing( monotonically m )
+constexpr bool is_decreasing(const monotonically m )
 {
     return m == monotonically::constant || m == monotonically::decreasing;
 }
@@ -505,7 +505,7 @@ enum class aggregate_type : int {
     MAX,
     SUM,
     AVERAGE,
-    num_aggregate_types
+    num_aggregate_types,
 };
 
 template<>
@@ -523,8 +523,9 @@ enum class link_state : int {
     bio_cable,       // Linked to the cable holder's cable system bionic - source if connected to a vehicle, target otherwise
     vehicle_tow,     // Linked to a valid tow point on a vehicle - source if it's the towing vehicle, target if the towed one
     automatic,       // Use in link_to() to automatically set the type of connection based on the connected vehicle part. Is always true as a link_has_states() parameter.
-    last
+    last,
 };
+
 template<>
 struct enum_traits<link_state> {
     static constexpr link_state last = link_state::last;
@@ -533,7 +534,7 @@ struct enum_traits<link_state> {
 enum mut_count_type {
     POSITIVE,
     NEGATIVE,
-    ALL
+    ALL,
 };
 
 enum class bp_type {
@@ -559,7 +560,7 @@ enum class bp_type {
     tail,
     // more of a general purpose limb, such as horns.
     other,
-    num_types
+    num_types,
 };
 
 template<>
@@ -571,7 +572,7 @@ enum class surroundings_menu_tab_enum : int {
     items = 0,
     monsters,
     terfurn,
-    num_tabs
+    num_tabs,
 };
 
 template<>
@@ -586,7 +587,7 @@ enum class rem_cap_return {
     NO_SPACE_IN_PARENT,
     BUCKET_FAIL, // when item is bucket, and is not on ground/held
     ANOTHER_LIQUID_INSIDE,
-    LAST
+    LAST,
 };
 
 #endif // CATA_SRC_ENUMS_H

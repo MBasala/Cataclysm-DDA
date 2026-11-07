@@ -4746,7 +4746,7 @@ static void rod_fish( Character &who, const std::vector<monster *> &fishables )
     constexpr auto caught_corpse = []( Character & who, map & here, const mtype & corpse_type ) {
         item corpse = item::make_corpse( corpse_type.id,
                                          calendar::turn + rng( 0_turns,
-                                                 3_hours ) );
+                                                               3_hours ) );
         corpse.set_var( "activity_var", who.name );
         item_location loc = here.add_item_or_charges_ret_loc( who.pos_bub(), corpse );
         who.add_msg_if_player( m_good, _( "You caught a %s." ), corpse_type.nname() );

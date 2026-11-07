@@ -1577,8 +1577,8 @@ std::optional<int> iuse::fish_trap_tick( Character *p, item *it, const tripoint_
                     g->catch_a_monster( chosen_fish, pos, p, 300_hours ); //catch the fish!
                 } else {
                     here.add_item_or_charges( pos, item::make_corpse( chosen_fish->type->id,
-                                              calendar::turn + rng( 0_turns,
-                                                      3_hours ) ) );
+                                                                      calendar::turn + rng( 0_turns,
+                                                                          3_hours ) ) );
                 }
             } else {
                 //there will always be a chance that the player will get lucky and catch a fish
@@ -1594,7 +1594,7 @@ std::optional<int> iuse::fish_trap_tick( Character *p, item *it, const tripoint_
                     //Also: corpses and comestibles do not rot in containers like this, but on the ground they will rot.
                     //we don't know when it was caught so use a random turn
                     here.add_item_or_charges( pos, item::make_corpse( fish_mon, it->birthday() + rng( 0_turns,
-                                              3_hours ) ) );
+                                                                          3_hours ) ) );
                     break; //this can happen only once
                 }
             }

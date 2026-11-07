@@ -339,8 +339,8 @@ class item
          * With the default parameters it makes a human corpse, created at the current turn.
          */
         /*@{*/
-        static item make_corpse( const mtype_id &mt = string_id<mtype>::NULL_ID(),
-                                 time_point turn = calendar::turn, const std::string &name = "", int upgrade_time = -1 );
+        static item make_corpse(const mtype_id &mt = string_id<mtype>::NULL_ID(),
+                                time_point turn = calendar::turn, std::string_view name = "", int upgrade_time = -1);
         /*@}*/
         /**
          * @return The monster type associated with this item (@ref corpse). It is usually the
@@ -470,8 +470,8 @@ class item
                                    const std::optional<unsigned int> &selected = std::nullopt ) const;
         /**
          * Returns the item name and the charges or contained charges (if the item can have
-         * charges at all). Calls @ref tname with given quantity and with_prefix being true.
-         */
+         */         * charges at all). Calls @ref tname with given quantity and with_prefix being true.
+
         std::string display_name( unsigned int quantity = 1, bool color_faults = false ) const;
 
         std::vector<iteminfo> get_info( bool showtext ) const;
@@ -2076,6 +2076,7 @@ class item
         /*@{*/
         double get_var( std::string_view key, double default_value ) const;
         std::string get_var( std::string_view key, std::string default_value = {} ) const;
+        std::string_view get_var( std::string_view key, std::string_view default_value = {} ) const;
         tripoint_abs_ms get_var( std::string_view key, tripoint_abs_ms default_value ) const;
 
         void set_var( const std::string &key, diag_value value );
@@ -2213,13 +2214,13 @@ class item
          *
          */
         /*@{*/
-        bool has_property( const std::string &prop ) const;
+        bool has_property( const std::string_view prop ) const;
         /**
          * Get typed property for item.
          * Return same type as the passed default value, or string where no default provided.
          */
-        std::string get_property_string( const std::string &prop, const std::string &def = "" ) const;
-        int64_t get_property_int64_t( const std::string &prop, int64_t def = 0 ) const;
+        std::string get_property_string(std::string_view prop, std::string_view def = "") const;
+        int64_t get_property_int64_t( const std::string_view prop, int64_t def = 0 ) const;
         /*@}*/
 
         /**
@@ -2625,7 +2626,7 @@ class item
         /**
          * Set the variant of this item
          */
-        void set_itype_variant( const std::string &variant );
+        void set_itype_variant(std::string_view variant);
 
         void clear_itype_variant();
 
@@ -2724,7 +2725,7 @@ class item
          * @returns true if ammo sufficient for number of uses is loaded, false otherwise
          */
         bool ammo_sufficient( const Character *carrier, int qty = 1 ) const;
-        bool ammo_sufficient( const Character *carrier, const std::string &method, int qty = 1 ) const;
+        bool ammo_sufficient( const Character *carrier, const std::string_view method, int qty = 1 ) const;
 
         /**
          * Consume ammo (if available) and return the amount of ammo that was consumed
@@ -2874,11 +2875,11 @@ class item
         std::vector<item *> magazines_current();
         std::vector<const item *> magazines_current() const;
 
-        item_pocket *pocket_by_id( const std::string &id );
-        const item_pocket *pocket_by_id( const std::string &id ) const;
+        item_pocket *pocket_by_id( const std::string_view id );
+        const item_pocket *pocket_by_id( const std::string_view id ) const;
 
-        int ammo_remaining_in_pocket( const std::string &id ) const;
-        int ammo_consume_in_pocket( const std::string &id, int qty, map &here,
+        int ammo_remaining_in_pocket( const std::string_view id ) const;
+        int ammo_consume_in_pocket( const std::string_view id, int qty, map &here,
                                     const tripoint_bub_ms &pos );
 
         bool uses_firing_requirements() const;
@@ -2910,12 +2911,12 @@ class item
         int effective_qty( const pocket_consumption_entry &e ) const;
 
         std::string format_consumption_requirements(
-            const std::string &method = "",
+            const std::string_view method = "",
             const gun_mode_id &mode = gun_mode_id( "DEFAULT" ),
             int uses = 1 ) const;
 
         // Ranking-only scalar; never call for actual consumption.
-        int expected_cost_per_use( const std::string &method = "" ) const;
+        int expected_cost_per_use( const std::string_view method = "" ) const;
 
         // _local excludes external pool so inventory aggregation does not
         // sum the same UPS/bionic/cable once per matching item.
@@ -3107,7 +3108,7 @@ class item
          * quantity parameter. This is roughly equivalent to creating an item instance and calling
          * @ref tname, however this function does not include strings like "(fresh)".
          */
-        static std::string nname( const itype_id &id, unsigned int quantity = 1 );
+        static std::string_view nname( const itype_id &id, unsigned int quantity = 1 );
         /**
          * Returns the item type of the given identifier. Never returns null.
          */
@@ -3593,7 +3594,7 @@ class item
         bool can_have_itype_variant() const;
 
         /** Does this have a variant with this id? */
-        bool possible_itype_variant( const std::string &test ) const;
+        bool possible_itype_variant(std::string_view test) const;
 
         /** If the item has a gun variant, this points to it. */
         const itype_variant_data *_itype_variant = nullptr;

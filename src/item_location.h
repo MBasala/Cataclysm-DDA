@@ -54,7 +54,7 @@ class item_location : public visitable
             vehicle = 3,
             container = 4,
             // these are ALL pseudo items of some variety!
-            crafting_inventory = 5
+            crafting_inventory = 5,
         };
 
         item_location();

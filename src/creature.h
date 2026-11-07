@@ -1020,9 +1020,9 @@ class Creature : public viewer
         // add_msg_if_npc( "<npcname> falls off their mount!" );
         // add_msg_if_player_or_npc( "You open the door.", "<npcname> opens the door." );
         //
-        virtual void add_msg_if_player( const std::string &/*msg*/ ) const {}
+        virtual void add_msg_if_player( const std::string_view /*msg*/ ) const {}
         virtual void add_msg_if_player( const game_message_params &/*params*/,
-                                        const std::string &/*msg*/ ) const {}
+                                        const std::string_view /*msg*/ ) const {}
         void add_msg_if_player( const translation &/*msg*/ ) const;
         void add_msg_if_player( const game_message_params &/*params*/, const translation &/*msg*/ ) const;
         template<typename ...Args>
@@ -1031,6 +1031,10 @@ class Creature : public viewer
         }
         template<typename ...Args>
         void add_msg_if_player( const std::string &msg, Args &&... args ) const {
+            return add_msg_if_player( string_format( msg, std::forward<Args>( args )... ) );
+        }
+        template<typename ...Args>
+        void add_msg_if_player( const std::string_view msg, Args &&... args ) const {
             return add_msg_if_player( string_format( msg, std::forward<Args>( args )... ) );
         }
         template<typename ...Args>

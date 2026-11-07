@@ -20,8 +20,7 @@ float item_reference::spoil_multiplier() const
 
 bool item_reference::has_watertight_container() const
 {
-    return std::any_of(
-               pocket_chain.begin(), pocket_chain.end(),
+    return std::ranges::any_of( pocket_chain,
     []( item_pocket const * pk ) {
         return pk->can_contain_liquid( false );
     } );
@@ -53,7 +52,7 @@ bool active_item_cache::add( item &it, point_rel_ms location, item *parent,
             ret |= add( *pkit, location, &it, pockets );
         }
     }
-    int speed = it.processing_speed();
+    const int speed = it.processing_speed();
     if( speed == item::NO_PROCESSING ) {
         return ret;
     }
@@ -64,19 +63,15 @@ bool active_item_cache::add( item &it, point_rel_ms location, item *parent,
         for( item_reference &iter : target_list ) {
             // Omit those expired references
             if( iter.item_ref ) {
-                target_index.emplace( iter.item_ref.get(), iter.item_ref );
+                target_index.try_emplace(iter.item_ref.get(), iter.item_ref );
             }
         }
     }
-    // If the item is already in the cache for some reason, don't add a second reference
-    auto iter = target_index.find( &it );
-    if( iter != target_index.end() ) {
-        // Ensure it's really what we want, and hasn't expired
-        if( iter->second && iter->second.get() == &it ) {
-            return true;
-        }
+    // If the item is already in the cache for some reason, don't add a second reference. Ensure it's really what we want, and hasn't expired
+    if(const auto iter = target_index.find( &it );  iter != target_index.end() && iter->second && iter->second.get() == &it) {
+        return true;
     }
-    item_reference ref{ location, it.get_safe_reference(), parent, pocket_chain };
+    item_reference ref{ .location=location, .item_ref=it.get_safe_reference(), .parent=parent, .pocket_chain=pocket_chain };
     if( it.can_revive() ) {
         special_items[special_item_type::corpse].emplace_back( ref );
     }
@@ -84,13 +79,13 @@ bool active_item_cache::add( item &it, point_rel_ms location, item *parent,
         special_items[special_item_type::explosive].emplace_back( ref );
     }
     target_list.emplace_back( std::move( ref ) );
-    target_index.emplace( &it, it.get_safe_reference() );
+    target_index.try_emplace(&it, it.get_safe_reference());
     return true;
 }
 
 bool active_item_cache::empty() const
 {
-    return std::all_of( active_items.begin(), active_items.end(), []( const auto & active_queue ) {
+    return std::ranges::all_of( active_items, []( const auto & active_queue ) {
         return active_queue.second.empty();
     } );
 }
@@ -98,14 +93,14 @@ bool active_item_cache::empty() const
 std::vector<item_reference> active_item_cache::get()
 {
     std::vector<item_reference> all_cached_items;
-    for( std::pair<const int, std::list<item_reference>> &kv : active_items ) {
-        for( std::list<item_reference>::iterator it = kv.second.begin(); it != kv.second.end(); ) {
+    for( auto &[k, ir_l] : active_items ) {
+        for( std::list<item_reference>::iterator it = ir_l.begin(); it != ir_l.end(); ) {
             if( it->item_ref ) {
                 all_cached_items.emplace_back( *it );
                 ++it;
             } else {
-                active_items_index[kv.first].clear();
-                it = kv.second.erase( it );
+                active_items_index[k].clear();
+                it = ir_l.erase( it );
             }
         }
     }
@@ -119,29 +114,29 @@ std::vector<item_reference> active_item_cache::get_for_processing()
     []( size_t prev, const auto & kv ) {
         return prev + kv.second.size() / static_cast<size_t>( kv.first );
     } ) );
-    for( std::pair<const int, std::list<item_reference>> &kv : active_items ) {
+    for( auto &[k, ir_l] : active_items ) {
         // Rely on iteration logic to make sure the number is sane.
-        int num_to_process = kv.second.size() / kv.first;
-        std::list<item_reference>::iterator it = kv.second.begin();
-        for( ; it != kv.second.end() && num_to_process >= 0; ) {
+        size_t num_to_process = ir_l.size() / k;
+        std::list<item_reference>::iterator it = ir_l.begin();
+        while(it != ir_l.end() && num_to_process > 0) {
             if( it->item_ref ) {
                 items_to_process.push_back( *it );
                 --num_to_process;
                 ++it;
             } else {
                 // The item has been destroyed, so remove the reference from the cache
-                active_items_index[kv.first].clear();
-                it = kv.second.erase( it );
+                active_items_index[k].clear();
+                it = ir_l.erase( it );
             }
         }
         // Rotate the returned items to the end of their list so that the items that weren't
         // returned this time will be first in line on the next call
-        kv.second.splice( kv.second.end(), kv.second, kv.second.begin(), it );
+        ir_l.splice( ir_l.end(), ir_l, ir_l.begin(), it );
     }
     return items_to_process;
 }
 
-std::vector<item_reference> active_item_cache::get_special( special_item_type type )
+std::vector<item_reference> active_item_cache::get_special(const special_item_type type )
 {
     std::vector<item_reference> matching_items;
     std::list<item_reference> &items = special_items[type];
@@ -158,8 +153,8 @@ std::vector<item_reference> active_item_cache::get_special( special_item_type ty
 
 void active_item_cache::subtract_locations( const point_rel_ms &delta )
 {
-    for( std::pair<const int, std::list<item_reference>> &pair : active_items ) {
-        for( item_reference &ir : pair.second ) {
+    for( auto &[k, ir_l]: active_items ) {
+        for( item_reference &ir : ir_l ) {
             ir.location -= delta;
         }
     }
@@ -167,8 +162,8 @@ void active_item_cache::subtract_locations( const point_rel_ms &delta )
 
 void active_item_cache::rotate_locations( int turns, const point_rel_ms &dim )
 {
-    for( std::pair<const int, std::list<item_reference>> &pair : active_items ) {
-        for( item_reference &ir : pair.second ) {
+    for( auto &[k, ir_l] : active_items ) {
+        for( item_reference &ir : ir_l ) {
             // Should 'rotate' be propaged up to the typed coordinates?
             ir.location = ir.location.rotate( turns, dim.raw() );
         }
@@ -177,8 +172,8 @@ void active_item_cache::rotate_locations( int turns, const point_rel_ms &dim )
 
 void active_item_cache::mirror( const point_rel_ms &dim, bool horizontally )
 {
-    for( std::pair<const int, std::list<item_reference>> &pair : active_items ) {
-        for( item_reference &ir : pair.second ) {
+    for( auto &[k, ir_l] : active_items ) {
+        for( item_reference &ir : ir_l ) {
             if( horizontally ) {
                 ir.location.x() = dim.x() - 1 - ir.location.x();
             } else {

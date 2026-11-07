@@ -46,9 +46,7 @@ struct printf_converter<translation> {
 
 template<>
 struct printf_converter<std::string> {
-    inline const char *convert( const std::string &s ) {
-        return s.c_str();
-    }
+    std::string_view convert( const std::string &s ) { return s; }
 };
 
 #ifdef __cpp_char8_t

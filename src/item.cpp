@@ -390,7 +390,7 @@ item::~item() = default;
 item &item::operator=( const item & ) = default;
 item &item::operator=( item && ) noexcept = default;
 
-item item::make_corpse( const mtype_id &mt, time_point turn, const std::string &name,
+item item::make_corpse( const mtype_id &mt, time_point turn, std::string_view name,
                         const int upgrade_time )
 {
     if( !mt.is_valid() ) {
@@ -415,7 +415,7 @@ item item::make_corpse( const mtype_id &mt, time_point turn, const std::string &
 
     // This is unconditional because the const itemructor above sets result.name to
     // "human corpse".
-    result.corpse_name = name;
+    result.corpse_name = std::string(name);
 
     return result;
 }
@@ -2433,27 +2433,26 @@ const item::FlagsSetType &item::get_suffix_flags() const
     return suffix_tags_cache;
 }
 
-bool item::has_property( const std::string &prop ) const
+bool item::has_property( const std::string_view prop ) const
 {
-    return type->properties.find( prop ) != type->properties.end();
+    return type->properties.contains( prop );
 }
 
-std::string item::get_property_string( const std::string &prop, const std::string &def ) const
+std::string item::get_property_string( const std::string_view prop, const std::string_view def ) const
 {
     const auto it = type->properties.find( prop );
-    return it != type->properties.end() ? it->second : def;
+    return it != type->properties.end() ? it->second : std::string(def);
 }
 
-int64_t item::get_property_int64_t( const std::string &prop, int64_t def ) const
+int64_t item::get_property_int64_t( const std::string_view prop, const int64_t def ) const
 {
-    const auto it = type->properties.find( prop );
-    if( it != type->properties.end() ) {
+    if(const auto it = type->properties.find( prop );  it != type->properties.end() ) {
         char *e = nullptr;
-        int64_t r = std::strtoll( it->second.c_str(), &e, 10 );
+        const int64_t r = std::strtoll( it->second.c_str(), &e, 10 );
         if( !it->second.empty() && *e == '\0' ) {
             return r;
         }
-        debugmsg( "invalid property '%s' for item '%s'", prop.c_str(), tname() );
+        debugmsg( "invalid property '%s' for item '%s'", prop, tname() );
     }
     return def;
 }
@@ -2872,8 +2871,8 @@ const item *item::get_photo_gallery() const
 int item::total_photos() const
 {
     // Reading a cached count avoids reparsing the JSON blob in stacks_with.
-    const auto count_for = [this]( const std::string & var_name ) -> int {
-        const std::string count_var = var_name + "_count";
+    const auto count_for = [this]( const std::string_view var_name ) -> int {
+        const std::string count_var = std::string(var_name) + "_count";
         if( has_var( count_var ) )
         {
             return static_cast<int>( get_var( count_var, 0.0 ) );
@@ -3061,7 +3060,7 @@ bool item::can_have_itype_variant() const
     return !type->variants.empty();
 }
 
-bool item::possible_itype_variant( const std::string &test ) const
+bool item::possible_itype_variant( const std::string_view test ) const
 {
     if( !can_have_itype_variant() ) {
         return false;
@@ -3099,7 +3098,7 @@ const itype_variant_data &item::itype_variant() const
     return *_itype_variant;
 }
 
-void item::set_itype_variant( const std::string &variant )
+void item::set_itype_variant( const std::string_view variant )
 {
     if( variant.empty() || type->variants.empty() ) {
         return;
@@ -3158,7 +3157,7 @@ bool item::is_food() const
     if( !is_comestible() ) {
         return false;
     }
-    const std::string &comest_type = get_comestible()->comesttype;
+    const std::string_view comest_type = get_comestible()->comesttype;
     return comest_type == "FOOD" || comest_type == "DRINK";
 }
 
@@ -3508,7 +3507,7 @@ std::set<recipe_id> item::get_saved_recipes() const
         }
     }
     std::set<recipe_id> result;
-    for( const std::string &rid_str : string_split( get_var( "EIPC_RECIPES" ), ',' ) ) {
+    for( const std::string_view rid_str : string_split( get_var( "EIPC_RECIPES" ), ',' ) ) {
         const recipe_id rid( rid_str );
         if( rid.is_empty() ) {
             continue;
@@ -3642,11 +3641,11 @@ std::vector<const item *> item::efiles() const
     return contents.efiles();
 }
 
-const use_function *item::get_use( const std::string &use_name ) const
+const use_function *item::get_use( const std::string_view use_name ) const
 {
     const use_function *fun = nullptr;
     visit_items(
-    [&fun, &use_name]( const item * it, auto ) {
+    [&fun, use_name]( const item * it, auto ) {
         if( it == nullptr ) {
             return VisitResponse::SKIP;
         }
@@ -3660,7 +3659,7 @@ const use_function *item::get_use( const std::string &use_name ) const
     return fun;
 }
 
-const use_function *item::get_use_internal( const std::string &use_name ) const
+const use_function *item::get_use_internal( const std::string_view use_name ) const
 {
     if( type != nullptr ) {
         return type->get_use( use_name );
@@ -3669,11 +3668,11 @@ const use_function *item::get_use_internal( const std::string &use_name ) const
 }
 
 template<typename Item>
-Item *item::get_usable_item_helper( Item &self, const std::string &use_name )
+Item *item::get_usable_item_helper( Item &self, const std::string_view use_name )
 {
     Item *ret = nullptr;
     self.visit_items(
-    [&ret, &use_name]( item * it, auto ) {
+    [&ret, use_name]( item * it, auto ) {
         if( it == nullptr ) {
             return VisitResponse::SKIP;
         }
@@ -3687,12 +3686,12 @@ Item *item::get_usable_item_helper( Item &self, const std::string &use_name )
     return ret;
 }
 
-const item *item::get_usable_item( const std::string &use_name ) const
+const item *item::get_usable_item( const std::string_view use_name ) const
 {
     return get_usable_item_helper( *this, use_name );
 }
 
-item *item::get_usable_item( const std::string &use_name )
+item *item::get_usable_item( const std::string_view use_name )
 {
     return get_usable_item_helper( *this, use_name );
 }
