@@ -469,9 +469,9 @@ class item
         std::string display_money( unsigned int quantity, unsigned int total,
                                    const std::optional<unsigned int> &selected = std::nullopt ) const;
         /**
-         * Returns the item name and the charges or contained charges (if the item can have
-         */         * charges at all). Calls @ref tname with given quantity and with_prefix being true.
-
+         * Returns the item name and the charges or contained charges (if the item can have * charges at all).
+         * Calls @ref tname with given quantity and with_prefix being true.
+         */
         std::string display_name( unsigned int quantity = 1, bool color_faults = false ) const;
 
         std::vector<iteminfo> get_info( bool showtext ) const;

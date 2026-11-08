@@ -213,15 +213,15 @@ static item_location inv_internal( Character &u, const inventory_selector_preset
         inventory_entry const &e = inv_s.get_highlighted();
         bool const collated = e.is_collation_entry();
         u.activity.values.clear();
-        const std::pair<size_t, size_t> &init_pair = inv_s.get_highlighted_position();
-        consume_menu_uistate new_state{
-            { init_pair.first, init_pair.second },
+        const auto [k, v] = inv_s.get_highlighted_position();
+        consume_menu_uistate new_state {
+            { k, v },
             collated ? std::vector<item_location> { location, inv_s.get_collation_next() }
 :
             inv_s.get_highlighted().locations,
-            inv_s.get_filter(), collated, cm_uistate.consume_menu_comestype
+            inv_s.get_filter(), collated, cm_uistate.consume_menu_comestype,
         };
-        uistate.consume_uistate = new_state;
+        uistate.consume_uistate = std::move(new_state);
     }
 
     return location;
@@ -529,8 +529,7 @@ class liquid_inventory_selector_preset : public inventory_selector_preset
             if( location.get_item() == avoid ) {
                 return false;
             }
-            Character *carrier = location.carrier();
-            if( carrier != nullptr ) {
+            if(Character *carrier = location.carrier(); carrier != nullptr ) {
                 return location->get_remaining_capacity_for_liquid( liquid, *carrier ) > 0;
             }
             const bool allow_buckets = location.where() == item_location::type::map;
